@@ -11,11 +11,11 @@ De leerlingmappen mogen ook per klas gegroepeerd zijn:
 
 ```
 3A
-├── Antoons Aliena
-└── Bellen Warre
+├── leerling1
+└── leerling2
 3B
-├── Bollen Isbel
-└── Cakar Julie
+├── leerling1
+└── leerling2
 ```
 
 De tool herkent dat klasniveau automatisch.
