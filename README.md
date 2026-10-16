@@ -60,30 +60,7 @@ Zoals elke webhost ziet GitHub technische bezoekgegevens, zoals het IP-adres. He
 **Hoe kan ik dit zelf controleren?**
 De code staat openbaar in `index.html`. Open in je browser de ontwikkelaarstools (F12), ga naar het tabblad **Netwerk** en verwerk een zip: je ziet dat er tijdens het verwerken niets wordt verstuurd.
 
-## Online zetten via GitHub Pages
 
-1. Maak een (gratis) account op <https://github.com>.
-2. Klik rechtsboven op **+** → **New repository**. Geef het de naam `takenbundelaar`, kies **Public**, laat *Add .gitignore* op **None** staan en klik op **Create repository**.
-3. Klik op **uploading an existing file** en sleep de **inhoud** van deze map erin (`index.html`, `README.md`, `.nojekyll` en de map `vendor`). Klik op **Commit changes**.
-4. Ga naar **Settings** → **Pages**. Kies bij *Source* **Deploy from a branch**, kies de branch **main** en de map **/ (root)**, en klik op **Save**.
-5. Na een paar minuten staat de tool online op:
-   `https://<jouw-gebruikersnaam>.github.io/takenbundelaar/`
-
-Die link kun je met iedereen delen. Je collega's hebben geen account nodig.
-
-> Het bestand `.nojekyll` is op sommige computers verborgen. Ontbreekt het, dan werkt de site meestal ook, maar het is veiliger om het mee te uploaden.
-
-## Lokaal gebruiken zonder internet
-
-Open `index.html` via een kleine lokale webserver, bijvoorbeeld:
-
-```bash
-python -m http.server 8000
-```
-
-en ga naar <http://localhost:8000>.
-
-## Bestanden
 
 ```
 index.html   De volledige tool (HTML, CSS en JavaScript)
