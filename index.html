@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Takenbundelaar</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+img{max-width:100%}
+/* Layout: one narrow working column — explainer, drop zone, per-student progress list, result bar */
+:root{
+  --bg:#f3f5f2; --surface:#ffffff; --fg:#1d2a26; --muted:#5d6b66; --line:#d5ddd8;
+  --accent:#1f6b57; --accent-soft:#e1efe9; --warn:#a15c0a; --warn-soft:#fbefdc; --bad:#b03a2e;
+  --display:"Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  --body:"Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121916; --surface:#1a2420; --fg:#e4ece8; --muted:#9aaba4; --line:#2e3d37;
+  --accent:#5fc3a3; --accent-soft:#1d3a31; --warn:#e8a64f; --warn-soft:#3a2c17; --bad:#ef8a7f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121916; --surface:#1a2420; --fg:#e4ece8; --muted:#9aaba4; --line:#2e3d37;
+  --accent:#5fc3a3; --accent-soft:#1d3a31; --warn:#e8a64f; --warn-soft:#3a2c17; --bad:#ef8a7f; color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 var(--body);
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:32px 56px}
+.wrap{max-width:720px;margin:0 auto;display:grid;gap:28px}
+h1{font:750 clamp(30px,6vw,42px)/1.05 var(--display);letter-spacing:-.02em;margin:0;text-wrap:balance}
+h2{font:600 19px/1.2 var(--display);margin:0}
+.lede{color:var(--muted);margin:10px 0 0;max-width:60ch}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0;padding:0;list-style:none;counter-reset:s}
+.steps li{counter-increment:s;border-top:2px solid var(--line);padding-top:10px;font-size:14.5px;color:var(--muted);min-width:0}
+.steps li::before{content:"Stap " counter(s);display:block;font:600 12px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:2px}
+@media (max-width:560px){.steps{grid-template-columns:1fr}}
+.drop{border:2px dashed var(--line);border-radius:14px;background:var(--surface);padding:28px 20px;display:grid;gap:10px;justify-items:center;text-align:center;transition:border-color .15s, background .15s;cursor:pointer}
+.drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop:focus-within{outline:3px solid var(--accent);outline-offset:3px}
+.drop strong{font:600 18px var(--display)}
+.drop span{color:var(--muted);font-size:14px}
+.drop input{position:absolute;width:1px;height:1px;opacity:0}
+.btn{appearance:none;border:0;border-radius:10px;background:var(--accent);color:var(--surface);font:700 15px var(--body);padding:11px 18px;cursor:pointer}
+.btn:focus-visible{outline:3px solid var(--fg);outline-offset:2px}
+.btn[disabled]{opacity:.5;cursor:default}
+.btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:14px}
+.status{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
+.status p{margin:0;font-variant-numeric:tabular-nums}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+.list{list-style:none;margin:0;padding:0;max-height:360px;overflow:auto;border-top:1px solid var(--line)}
+.list li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:9px 2px;border-bottom:1px solid var(--line);font-size:14.5px}
+.list li.klas{display:block;font:600 13px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);padding:14px 2px 6px;border-bottom:2px solid var(--accent)}
+.list .who{font-weight:700;min-width:0;overflow-wrap:anywhere}
+.list .files{grid-column:1/-1;color:var(--muted);font-size:13px;overflow-wrap:anywhere}
+.pill{font-size:12px;font-weight:700;padding:2px 9px;border-radius:99px;background:var(--line);color:var(--muted);white-space:nowrap;align-self:start;font-variant-numeric:tabular-nums}
+.pill.ok{background:var(--accent-soft);color:var(--accent)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.busy{background:var(--accent-soft);color:var(--accent)}
+.note{font-size:14px;color:var(--muted);margin:0}
+.note b{color:var(--fg)}
+.opts{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:14.5px}
+.opts label{display:flex;gap:8px;align-items:center;cursor:pointer}
+.err{color:var(--bad);font-weight:700;margin:0}
+.fallback a{color:var(--accent);font-weight:700}
+.privacy{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--muted);border-left:3px solid var(--accent);padding-left:12px}
+#stage{position:absolute;left:-20000px;top:0;width:900px;background:#fff;color:#000}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Takenbundelaar</h1>
+    <p class="lede">Zet een zip met ingediende taken om in één PDF. Elke map in de zip is een leerling. Staan de leerlingen per klas in mappen, dan wordt eerst per klas en dan per leerling gesorteerd. De naam (en klas) staat onderaan elke pagina.</p>
+  </header>
+
+  <ol class="steps">
+    <li>Download de ingediende taken als zip (één map per leerling).</li>
+    <li>Sleep de zip hieronder of kies het bestand.</li>
+    <li>Wacht tot alle leerlingen klaar zijn en bewaar de PDF.</li>
+  </ol>
+
+  <label class="drop" id="drop" for="zipInput">
+    <strong>Sleep de zip hierheen</strong>
+    <span>of klik om een .zip-bestand te kiezen</span>
+    <input type="file" id="zipInput" accept=".zip,application/zip">
+  </label>
+
+  <div class="opts">
+    <label><input type="checkbox" id="optPageNo" checked> Paginanummer per leerling in de voettekst (bv. "1/2")</label>
+  </div>
+
+  <section class="panel" id="panel" hidden>
+    <div class="status">
+      <div>
+        <h2 id="zipName">—</h2>
+        <p id="summary" class="note"></p>
+      </div>
+      <button class="btn" id="saveBtn" disabled>PDF bewaren</button>
+    </div>
+    <div class="bar"><i id="barFill"></i></div>
+    <p id="error" class="err" hidden></p>
+    <p id="fallback" class="note fallback" hidden></p>
+    <ul class="list" id="list"></ul>
+    <p class="note" id="skipNote" hidden></p>
+  </section>
+
+  <p class="privacy">Alles gebeurt in je eigen browser. De taken van de leerlingen worden nergens naartoe gestuurd of opgeslagen.</p>
+  <p class="note">Werkt met <b>.docx</b>, <b>.pdf</b>, <b>.jpg</b> en <b>.png</b>. Oudere <b>.doc</b>- en <b>.odt</b>-bestanden kan de browser niet lezen; die worden overgeslagen en apart vermeld. Word-documenten worden als afbeelding van de pagina opgenomen, dus de opmaak kan licht afwijken van Word.</p>
+</div>
+
+<div id="stage" aria-hidden="true"></div>
+
+<script src="vendor/jszip.min.js"></script>
+<script src="vendor/docx-preview.min.js"></script>
+<script src="vendor/pako.min.js"></script>
+<script src="vendor/UTIF.js"></script>
+<script src="vendor/html2canvas.min.js"></script>
+<script src="vendor/pdf-lib.min.js"></script>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const A4 = [595.28, 841.89];
+  let resultBytes = null, resultName = "taken.pdf", busy = false;
+
+
+  const drop = $("drop"), input = $("zipInput");
+  ["dragenter","dragover"].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.add("over")}));
+  ["dragleave","drop"].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.remove("over")}));
+  drop.addEventListener("drop",ev=>{const f=ev.dataTransfer.files[0]; if(f) start(f)});
+  input.addEventListener("change",()=>{ if(input.files[0]) start(input.files[0]); input.value=""; });
+  $("saveBtn").addEventListener("click", save);
+
+  const norm = s => s.replace(/\s+/g," ").trim();
+  const ext = n => (n.match(/\.([^.\/]+)$/)||[,""])[1].toLowerCase();
+  const esc = s => s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+  // Folder structure: [wrapper/] [klas/] leerling/ bestand
+  // The folder that holds most files at the same depth is the student level;
+  // the folder above it counts as the class only when it differs between files.
+  function groupEntries(zip){
+    const items = [];
+    zip.forEach((path, entry)=>{
+      if(entry.dir) return;
+      const parts = path.split("/").filter(Boolean);
+      const file = parts[parts.length-1];
+      if(parts.includes("__MACOSX") || file.startsWith(".") || file.startsWith("~$")) return;
+      items.push({dirs: parts.slice(0,-1).map(norm), file, entry});
+    });
+    const depthCount = {};
+    items.forEach(it=>{ depthCount[it.dirs.length] = (depthCount[it.dirs.length]||0)+1; });
+    const depth = +Object.keys(depthCount).sort((a,b)=>depthCount[b]-depthCount[a] || b-a)[0] || 0;
+    items.forEach(it=>{
+      if(depth>0 && it.dirs.length>=depth){
+        it.student = it.dirs[depth-1];
+        it.klas = depth>=2 ? it.dirs[depth-2] : "";
+      } else {
+        it.student = it.dirs.length ? it.dirs[it.dirs.length-1] : "Zonder map";
+        it.klas = it.dirs.length>1 ? it.dirs[it.dirs.length-2] : "";
+      }
+    });
+    if(new Set(items.map(it=>it.klas)).size <= 1) items.forEach(it=>{ it.klas = ""; });
+
+    const groups = new Map();
+    items.forEach(it=>{
+      const key = it.klas + "\u0000" + it.student;
+      if(!groups.has(key)) groups.set(key, {klas: it.klas, student: it.student, files: []});
+      groups.get(key).files.push({file: it.file, entry: it.entry});
+    });
+    const coll = new Intl.Collator("nl", {sensitivity:"base", numeric:true});
+    return [...groups.values()]
+      .sort((a,b)=>coll.compare(a.klas,b.klas) || coll.compare(a.student,b.student))
+      .map(g=>({...g, files: g.files.sort((a,b)=>coll.compare(a.file,b.file))}));
+  }
+
+  function renderList(groups){
+    let last = null;
+    $("list").innerHTML = groups.map((g,i)=>{
+      let head = "";
+      if(g.klas && g.klas !== last){ head = `<li class="klas">${esc(g.klas)}</li>`; last = g.klas; }
+      return head + `<li id="g${i}"><span class="who">${esc(g.student)}</span><span class="pill" id="p${i}">wacht</span><span class="files">${g.files.map(f=>esc(f.file)).join(" · ")}</span></li>`;
+    }).join("");
+  }
+  function setPill(i, text, cls){ const p=$("p"+i); p.textContent=text; p.className="pill "+(cls||""); }
+
+  async function start(file){
+    if(busy) return;
+    busy = true; resultBytes = null;
+    $("panel").hidden = false; $("error").hidden = true; $("fallback").hidden = true; $("skipNote").hidden = true;
+    $("saveBtn").disabled = true;
+    $("zipName").textContent = file.name;
+    $("barFill").style.width = "0";
+    resultName = file.name.replace(/\.zip$/i,"") + " - samengevoegd.pdf";
+    try{
+      if(!window.JSZip || !window.PDFLib || !window.docx || !window.html2canvas) throw new Error("De hulpbibliotheken zijn niet geladen. Herlaad de pagina en probeer opnieuw.");
+      const zip = await JSZip.loadAsync(file);
+      const groups = groupEntries(zip);
+      if(!groups.length) throw new Error("Er staan geen bestanden in deze zip.");
+      renderList(groups);
+      const total = groups.reduce((n,g)=>n+g.files.length,0);
+      const klassen = new Set(groups.map(g=>g.klas).filter(Boolean)).size;
+      const klasText = klassen ? `${klassen} ${klassen===1?"klas":"klassen"} · ` : "";
+      $("summary").textContent = `${klasText}${groups.length} leerlingen · ${total} bestanden · bezig…`;
+
+      const out = await PDFLib.PDFDocument.create();
+      const font = await out.embedFont(PDFLib.StandardFonts.Helvetica);
+      const pageNo = $("optPageNo").checked;
+      const skipped = [];
+      let done = 0;
+
+      for(let i=0;i<groups.length;i++){
+        const g = groups[i];
+        setPill(i,"bezig","busy");
+        $("g"+i).scrollIntoView({block:"nearest"});
+        const firstPage = out.getPageCount();
+        let gSkipped = 0;
+        for(const f of g.files){
+          try{
+            await addFile(out, f);
+          }catch(e){
+            console.warn(f.file, e); gSkipped++; skipped.push(`${g.student}: ${f.file}`);
+          }
+          done++; $("barFill").style.width = (done/total*100).toFixed(1)+"%";
+        }
+        const pages = out.getPages().slice(firstPage);
+        const label = g.klas ? `${g.klas}  —  ${g.student}` : g.student;
+        pages.forEach((p,k)=>stamp(p, font, pageNo ? `${label}  —  ${k+1}/${pages.length}` : label));
+        if(!pages.length) setPill(i,"niets bruikbaar","warn");
+        else setPill(i, `${pages.length} p.` + (gSkipped?` · ${gSkipped} overgeslagen`:""), gSkipped?"warn":"ok");
+        await new Promise(r=>setTimeout(r,0));
+      }
+      if(!out.getPageCount()) throw new Error("Geen enkel bestand kon worden omgezet.");
+      out.setTitle(resultName.replace(/\.pdf$/,""));
+      resultBytes = await out.save();
+      $("summary").textContent = `${klasText}${groups.length} leerlingen · ${out.getPageCount()} pagina's · klaar`;
+      if(skipped.length){
+        $("skipNote").hidden = false;
+        $("skipNote").innerHTML = "<b>Overgeslagen</b> (open deze apart): " + skipped.map(esc).join("; ");
+      }
+      $("saveBtn").disabled = false;
+    }catch(e){
+      $("error").hidden = false; $("error").textContent = e.message || String(e);
+      $("summary").textContent = "";
+    }finally{ busy = false; $("stage").innerHTML = ""; }
+  }
+
+  async function addFile(out, f){
+    const e = ext(f.file);
+    if(e === "pdf"){
+      const src = await PDFLib.PDFDocument.load(await f.entry.async("uint8array"), {ignoreEncryption:true});
+      const pages = await out.copyPages(src, src.getPageIndices());
+      pages.forEach(p=>out.addPage(p));
+    } else if(e === "png" || e === "jpg" || e === "jpeg"){
+      const bytes = await f.entry.async("uint8array");
+      const img = e==="png" ? await out.embedPng(bytes) : await out.embedJpg(bytes);
+      placeImage(out, img, 36);
+    } else if(e === "docx"){
+      await addDocx(out, await f.entry.async("blob"));
+    } else {
+      throw new Error("Bestandstype niet ondersteund: ." + e);
+    }
+  }
+
+  function placeImage(out, img, margin){
+    const page = out.addPage(A4);
+    const maxW = A4[0]-2*margin, maxH = A4[1]-2*margin-20;
+    const s = Math.min(maxW/img.width, maxH/img.height, 1.5);
+    const w = img.width*s, h = img.height*s;
+    page.drawImage(img, {x:(A4[0]-w)/2, y:A4[1]-margin-h, width:w, height:h});
+  }
+
+  // Browsers cannot show TIFF images or Word's image cropping, so fix both inside the .docx first.
+  async function prepDocx(blob){
+    const z = await JSZip.loadAsync(blob);
+    const relFiles = Object.keys(z.files).filter(n=>/^word\/_rels\/.*\.rels$/.test(n));
+    const rels = {};
+    for(const n of relFiles) rels[n] = await z.file(n).async("string");
+    let changed = false;
+
+    for(const n of Object.keys(z.files).filter(n=>/^word\/media\/.*\.tiff?$/i.test(n))){
+      try{
+        const png = await tiffToPng(await z.file(n).async("arraybuffer"));
+        const newName = n.replace(/\.tiff?$/i, ".png");
+        z.file(newName, png); z.remove(n);
+        const oldT = n.replace(/^word\//,""), newT = newName.replace(/^word\//,"");
+        for(const r in rels) rels[r] = rels[r].split('"'+oldT+'"').join('"'+newT+'"');
+        changed = true;
+      }catch(e){ console.warn("tiff", n, e); }
+    }
+
+    const docPath = "word/document.xml", relPath = "word/_rels/document.xml.rels";
+    if(z.file(docPath) && rels[relPath]){
+      let xml = await z.file(docPath).async("string");
+      let k = 0;
+      const out = [];
+      let last = 0;
+      const re = /<pic:pic\b[\s\S]*?<\/pic:pic>/g;
+      let m;
+      while((m = re.exec(xml))){
+        let block = m[0];
+        const sr = block.match(/<a:srcRect\b([^>]*)\/>/);
+        const emb = block.match(/r:embed="([^"]+)"/);
+        if(sr && emb){
+          const a = {}; sr[1].replace(/(\w+)="(-?\d+)"/g,(_,key,v)=>{a[key]=Math.max(0,+v)/100000});
+          const tm = rels[relPath].match(new RegExp('<Relationship\\b[^>]*Id="'+emb[1]+'"[^>]*>'));
+          const target = tm && (tm[0].match(/Target="([^"]+)"/)||[])[1];
+          const file = target && z.file("word/"+target.replace(/^\.?\//,""));
+          if(file && (a.l||a.t||a.r||a.b)){
+            try{
+              const bmp = await createImageBitmap(await file.async("blob"));
+              const sx = bmp.width*(a.l||0), sy = bmp.height*(a.t||0);
+              const sw = bmp.width*(1-(a.l||0)-(a.r||0)), sh = bmp.height*(1-(a.t||0)-(a.b||0));
+              if(sw>1 && sh>1){
+                const c = document.createElement("canvas"); c.width = Math.round(sw); c.height = Math.round(sh);
+                c.getContext("2d").drawImage(bmp, sx, sy, sw, sh, 0, 0, c.width, c.height);
+                const png = await new Promise(r=>c.toBlob(r,"image/png"));
+                const id = "rIdCrop"+(++k), name = "media/crop_"+k+".png";
+                z.file("word/"+name, png);
+                rels[relPath] = rels[relPath].replace("</Relationships>", `<Relationship Id="${id}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="${name}"/></Relationships>`);
+                block = block.replace(emb[0], `r:embed="${id}"`).replace(sr[0], "");
+                changed = true;
+              }
+            }catch(e){ console.warn("crop", e); }
+          }
+        }
+        out.push(xml.slice(last, m.index), block); last = m.index + m[0].length;
+      }
+      out.push(xml.slice(last));
+      if(k) z.file(docPath, out.join(""));
+    }
+
+    if(!changed) return blob;
+    for(const r in rels) z.file(r, rels[r]);
+    let ct = await z.file("[Content_Types].xml").async("string");
+    if(!/Extension="png"/i.test(ct)) ct = ct.replace("<Types", "<Types").replace(/(<Types[^>]*>)/, '$1<Default Extension="png" ContentType="image/png"/>');
+    z.file("[Content_Types].xml", ct);
+    return z.generateAsync({type:"blob"});
+  }
+
+  async function tiffToPng(buf){
+    const ifds = UTIF.decode(buf);
+    UTIF.decodeImage(buf, ifds[0]);
+    const rgba = UTIF.toRGBA8(ifds[0]);
+    const w = ifds[0].width, h = ifds[0].height;
+    const c = document.createElement("canvas"); c.width = w; c.height = h;
+    c.getContext("2d").putImageData(new ImageData(new Uint8ClampedArray(rgba.buffer, rgba.byteOffset, w*h*4), w, h), 0, 0);
+    return new Promise(r=>c.toBlob(r,"image/png"));
+  }
+
+  async function addDocx(out, blob){
+    if(window.UTIF) { try{ blob = await prepDocx(blob); }catch(e){ console.warn("prep", e); } }
+    const stage = $("stage");
+    stage.innerHTML = "";
+    const body = document.createElement("div"), styles = document.createElement("div");
+    stage.append(styles, body);
+    await docx.renderAsync(blob, body, styles, {inWrapper:false, breakPages:true, ignoreLastRenderedPageBreak:true, ignoreWidth:false, ignoreHeight:false, renderHeaders:true, renderFooters:true, experimental:true});
+    await Promise.all([...body.querySelectorAll("img")].map(im=>im.complete?0:new Promise(r=>{im.onload=im.onerror=r})));
+    if(document.fonts && document.fonts.ready) await document.fonts.ready;
+    let sections = [...body.querySelectorAll("section.docx")];
+    if(!sections.length) sections = [body];
+    for(const sec of sections){
+      sec.style.margin = "0"; sec.style.boxShadow = "none";
+      const canvas = await html2canvas(sec, {scale:2, backgroundColor:"#ffffff", logging:false, useCORS:true});
+      const sliceH = Math.round(canvas.width * A4[1]/A4[0]);
+      for(let y=0; y<canvas.height; y+=sliceH){
+        const h = Math.min(sliceH, canvas.height-y);
+        if(y>0 && (h < sliceH*0.06 || isBlank(canvas, y, h))) continue;
+        const c = document.createElement("canvas");
+        c.width = canvas.width; c.height = sliceH;
+        const ctx = c.getContext("2d");
+        ctx.fillStyle = "#fff"; ctx.fillRect(0,0,c.width,c.height);
+        ctx.drawImage(canvas, 0, y, canvas.width, h, 0, 0, canvas.width, h);
+        const jpg = await new Promise(r=>c.toBlob(b=>r(b),"image/jpeg",0.86));
+        const img = await out.embedJpg(new Uint8Array(await jpg.arrayBuffer()));
+        const page = out.addPage(A4);
+        page.drawImage(img, {x:0, y:0, width:A4[0], height:A4[1]});
+      }
+    }
+    stage.innerHTML = "";
+  }
+
+  function isBlank(canvas, y, h){
+    const ctx = canvas.getContext("2d");
+    const step = 6, w = canvas.width;
+    const data = ctx.getImageData(0, y, w, h).data;
+    for(let row=0; row<h; row+=step){
+      for(let col=0; col<w; col+=step){
+        const k = (row*w+col)*4;
+        if(data[k]<235 || data[k+1]<235 || data[k+2]<235) return false;
+      }
+    }
+    return true;
+  }
+
+  function safeText(font, text){
+    let s = "";
+    for(const ch of text){
+      try{ font.encodeText(ch); s += ch; }
+      catch{ const base = ch.normalize("NFD").replace(/[̀-ͯ]/g,""); try{ font.encodeText(base); s+=base; }catch{ s+="?"; } }
+    }
+    return s;
+  }
+
+  function stamp(page, font, text){
+    const t = safeText(font, text), size = 9;
+    const {width} = page.getSize();
+    const w = font.widthOfTextAtSize(t, size);
+    const pad = 4, y = 16;
+    page.drawRectangle({x:(width-w)/2-pad, y:y-3, width:w+2*pad, height:size+5, color:PDFLib.rgb(1,1,1), opacity:0.85});
+    page.drawText(t, {x:(width-w)/2, y, size, font, color:PDFLib.rgb(0.25,0.25,0.25)});
+  }
+
+  function save(){
+    if(!resultBytes) return;
+    const url = URL.createObjectURL(new Blob([resultBytes], {type:"application/pdf"}));
+    const a = document.createElement("a");
+    a.href = url; a.download = resultName;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 60000);
+  }
+})();
+</script>
+</body>
+</html>
