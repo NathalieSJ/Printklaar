@@ -1,8 +1,10 @@
-# Takenbundelaar
+# Printklaar
 
-De Takenbundelaar zet een zip met ingediende taken om in één PDF die je makkelijk kunt nakijken, afdrukken of bewaren. De PDF is alfabetisch gesorteerd per leerling, en de naam van de leerling staat onderaan elke pagina.
+**Van uploadzone naar één PDF**
 
-## Wat doet de Takenbundelaar?
+Printklaar zet de ingediende taken uit een uploadzone (als zip gedownload) om in één PDF die je makkelijk kunt nakijken, afdrukken of bewaren. De PDF is alfabetisch gesorteerd per leerling, en de naam van de leerling staat onderaan elke pagina.
+
+## Wat doet Printklaar?
 
 ### Wat heb je nodig?
 Een zip-bestand met één map per leerling. De naam van de map is de naam van de leerling. In elke map zitten de bestanden die die leerling heeft ingediend. Dit is de structuur die je krijgt als je ingediende taken downloadt uit bijvoorbeeld Smartschool.

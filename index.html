@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Takenbundelaar</title>
+<title>Printklaar – van uploadzone naar één PDF</title>
 <style>
 *,*::before,*::after{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -26,6 +26,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 var(--body);
 .wrap{max-width:720px;margin:0 auto;display:grid;gap:28px}
 h1{font:750 clamp(30px,6vw,42px)/1.05 var(--display);letter-spacing:-.02em;margin:0;text-wrap:balance}
 h2{font:600 19px/1.2 var(--display);margin:0}
+.sub{font:600 17px/1.3 var(--display);color:var(--accent);margin:6px 0 0}
 .lede{color:var(--muted);margin:10px 0 0;max-width:60ch}
 .steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0;padding:0;list-style:none;counter-reset:s}
 .steps li{counter-increment:s;border-top:2px solid var(--line);padding-top:10px;font-size:14.5px;color:var(--muted);min-width:0}
@@ -72,7 +73,8 @@ h2{font:600 19px/1.2 var(--display);margin:0}
 
 <div class="wrap">
   <header>
-    <h1>Takenbundelaar</h1>
+    <h1>Printklaar</h1>
+    <p class="sub">Van uploadzone naar één PDF</p>
     <p class="lede">Zet een zip met ingediende taken om in één PDF. Elke map in de zip is een leerling. Staan de leerlingen per klas in mappen, dan wordt eerst per klas en dan per leerling gesorteerd. De naam (en klas) staat onderaan elke pagina.</p>
   </header>
 
