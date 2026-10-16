@@ -48,7 +48,7 @@ Nee. De zip wordt volledig in je eigen browser verwerkt en verlaat je computer n
 **Wordt er iets opgeslagen?**
 Nee. Er is geen database, er zijn geen cookies en er worden geen gegevens bewaard. Na het sluiten van de pagina is alles weg. Alleen de PDF die je zelf downloadt, blijft op je computer staan.
 
-**Wordt er AI gebruikt of contact gemaakt met Claude?**
+**Wordt er AI gebruikt of contact gemaakt met een AI?**
 Nee. Het is een gewoon script, zonder API-calls.
 
 **Welke externe diensten worden gebruikt?**
