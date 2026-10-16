@@ -88,6 +88,7 @@ h2{font:600 19px/1.2 var(--display);margin:0}
 
   <div class="opts">
     <label><input type="checkbox" id="optPageNo" checked> Paginanummer per leerling in de voettekst (bv. "1/2")</label>
+    <label><input type="checkbox" id="optDuplex"> Printklaar voor recto-verso (lege pagina na een oneven aantal, zodat elke leerling op een nieuw blad begint)</label>
   </div>
 
   <section class="panel" id="panel" hidden>
@@ -205,8 +206,9 @@ h2{font:600 19px/1.2 var(--display);margin:0}
       const out = await PDFLib.PDFDocument.create();
       const font = await out.embedFont(PDFLib.StandardFonts.Helvetica);
       const pageNo = $("optPageNo").checked;
+      const duplex = $("optDuplex").checked;
       const skipped = [];
-      let done = 0;
+      let done = 0, blanks = 0;
 
       for(let i=0;i<groups.length;i++){
         const g = groups[i];
@@ -225,14 +227,22 @@ h2{font:600 19px/1.2 var(--display);margin:0}
         const pages = out.getPages().slice(firstPage);
         const label = g.klas ? `${g.klas}  —  ${g.student}` : g.student;
         pages.forEach((p,k)=>stamp(p, font, pageNo ? `${label}  —  ${k+1}/${pages.length}` : label));
+        // Recto-verso: pad an odd page count with a blank page so the next student starts on a new sheet.
+        let padded = false;
+        if(duplex && pages.length % 2 === 1 && i < groups.length-1){
+          const last = pages[pages.length-1].getSize();
+          out.addPage([last.width, last.height]);
+          padded = true; blanks++;
+        }
         if(!pages.length) setPill(i,"niets bruikbaar","warn");
-        else setPill(i, `${pages.length} p.` + (gSkipped?` · ${gSkipped} overgeslagen`:""), gSkipped?"warn":"ok");
+        else setPill(i, `${pages.length} p.` + (padded?" + 1 leeg":"") + (gSkipped?` · ${gSkipped} overgeslagen`:""), gSkipped?"warn":"ok");
         await new Promise(r=>setTimeout(r,0));
       }
       if(!out.getPageCount()) throw new Error("Geen enkel bestand kon worden omgezet.");
       out.setTitle(resultName.replace(/\.pdf$/,""));
       resultBytes = await out.save();
-      $("summary").textContent = `${klasText}${groups.length} leerlingen · ${out.getPageCount()} pagina's · klaar`;
+      const blankText = duplex ? ` (waarvan ${blanks} leeg voor recto-verso)` : "";
+      $("summary").textContent = `${klasText}${groups.length} leerlingen · ${out.getPageCount()} pagina's${blankText} · klaar`;
       if(skipped.length){
         $("skipNote").hidden = false;
         $("skipNote").innerHTML = "<b>Overgeslagen</b> (open deze apart): " + skipped.map(esc).join("; ");

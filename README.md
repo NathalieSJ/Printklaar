@@ -28,7 +28,8 @@ De tool herkent dat klasniveau automatisch.
    - PDF-bestanden worden ongewijzigd overgenomen.
    - Afbeeldingen (.jpg, .png) krijgen elk een eigen pagina.
 4. **Onderaan elke pagina komt de naam van de leerling**, eventueel met een paginanummer per leerling (bv. "Peeters Jan — 1/2"). Bij een zip met klasmappen staat de klas ervoor (bv. "3A — Peeters Jan — 1/2").
-5. **Alles wordt samengevoegd tot één PDF**, die je met de knop "PDF bewaren" downloadt.
+5. **Optioneel: printklaar voor recto-verso.** Vink je "Printklaar voor recto-verso" aan, dan krijgt elke leerling met een oneven aantal pagina's een lege pagina erbij. Zo begint elke leerling op een nieuw blad en komt de taak van de volgende leerling nooit op de achterkant. De lege pagina's tellen niet mee in de paginanummering.
+6. **Alles wordt samengevoegd tot één PDF**, die je met de knop "PDF bewaren" downloadt.
 
 Heeft een leerling meer dan één bestand ingediend, dan staan die allemaal na elkaar onder zijn of haar naam.
 
