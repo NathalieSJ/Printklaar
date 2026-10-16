@@ -61,6 +61,8 @@ h2{font:600 19px/1.2 var(--display);margin:0}
 .opts label{display:flex;gap:8px;align-items:center;cursor:pointer}
 .err{color:var(--bad);font-weight:700;margin:0}
 .fallback a{color:var(--accent);font-weight:700}
+.disclaimer{display:grid;gap:4px}
+.disclaimer h2{font:600 12px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--warn)}
 .privacy{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--muted);border-left:3px solid var(--accent);padding-left:12px}
 #stage{position:absolute;left:-20000px;top:0;width:900px;background:#fff;color:#000}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
@@ -107,7 +109,11 @@ h2{font:600 19px/1.2 var(--display);margin:0}
   </section>
 
   <p class="privacy">Alles gebeurt in je eigen browser. De taken van de leerlingen worden nergens naartoe gestuurd of opgeslagen.</p>
-  <p class="note">Werkt met <b>.docx</b>, <b>.pdf</b>, <b>.jpg</b> en <b>.png</b>. Oudere <b>.doc</b>- en <b>.odt</b>-bestanden kan de browser niet lezen; die worden overgeslagen en apart vermeld. Word-documenten worden als afbeelding van de pagina opgenomen, dus de opmaak kan licht afwijken van Word.</p>
+  <p class="note">Werkt met <b>.docx</b>, <b>.pdf</b>, <b>.jpg</b> en <b>.png</b>. Word-documenten worden als afbeelding van de pagina opgenomen, dus de opmaak kan licht afwijken van Word.</p>
+  <section class="disclaimer">
+    <h2>Disclaimer</h2>
+    <p class="note">Oudere <b>.doc</b>- en <b>.odt</b>-bestanden kan de browser niet lezen; die worden overgeslagen en apart vermeld.</p>
+  </section>
 </div>
 
 <div id="stage" aria-hidden="true"></div>
